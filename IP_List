@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#deleting old file to prevent build up
+rm IP_List_Sources
+
+#original line that greps IPs with regex
+#grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}" splunkd.log > /Users/kurthodgin/IP_List
+
+#create files
+touch IP_List && touch IP_List_Dedup
+touch IP_List_Rex && touch IP_List_Sources
+
+#pull IPs with grep and regex
+grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}" splunkd* > IP_List
+
+#sort list and dedup
+sort IP_List | uniq > IP_List_Dedup
+
+#Sort and Dedupe
+sort IP_List_Dedup | uniq > IP_List_Sources
+
+#pull IPs aginst Sources
+grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}" IP_List_Sources > IP_List_Rex
+
+#print list to help seperate from sources
+echo "####################list without sources####################" >> IP_List_Sources
+
+#Dedupe one last time
+sort -u IP_List_Rex >> IP_List_Sources
+
+#remove uneeded files leaving IP_List_Sources
+rm IP_List && rm IP_List_Dedup
+rm IP_List_Rex
